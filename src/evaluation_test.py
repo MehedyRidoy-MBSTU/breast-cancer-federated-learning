@@ -3,7 +3,9 @@ import random
 import numpy as np
 import pandas as pd
 import torch
+
 from torch.utils.data import DataLoader
+
 from sklearn.metrics import (
     accuracy_score,
     precision_score,
@@ -24,14 +26,22 @@ from src.models.resnet18 import create_resnet18
 # ============================================================
 
 SEED = 42
+
 IMAGE_SIZE = 224
+
 BATCH_SIZE = 32
+
 NUM_WORKERS = 0
 
+
 TEST_CSV = "processed/splits/test.csv"
+
 CHECKPOINT = "checkpoints/resnet18_best.pth"
 
+
 RESULTS_DIR = "results"
+
+
 PREDICTIONS_FILE = os.path.join(
     RESULTS_DIR,
     "resnet18_test_predictions.csv"
@@ -43,7 +53,9 @@ PREDICTIONS_FILE = os.path.join(
 # ============================================================
 
 random.seed(SEED)
+
 np.random.seed(SEED)
+
 torch.manual_seed(SEED)
 
 
@@ -52,34 +64,50 @@ torch.manual_seed(SEED)
 # ============================================================
 
 if torch.backends.mps.is_available():
+
     device = torch.device("mps")
+
 elif torch.cuda.is_available():
+
     device = torch.device("cuda")
+
 else:
+
     device = torch.device("cpu")
 
 
+
 # ============================================================
-# START
+# HEADER
 # ============================================================
 
 print("=" * 70)
+
 print("FINAL TEST EVALUATION - RESNET-18")
+
 print("=" * 70)
+
 
 print(f"Device: {device}")
+
 print(f"Test CSV: {TEST_CSV}")
+
 print(f"Checkpoint: {CHECKPOINT}")
+
 
 
 # ============================================================
 # DATASET
 # ============================================================
 
+
 test_dataset = BreaKHisDataset(
     TEST_CSV,
-    transform=get_eval_transforms(IMAGE_SIZE)
+    transform=get_eval_transforms(
+        IMAGE_SIZE
+    )
 )
+
 
 test_loader = DataLoader(
     test_dataset,
@@ -88,88 +116,166 @@ test_loader = DataLoader(
     num_workers=NUM_WORKERS
 )
 
-print(f"\nTest images: {len(test_dataset)}")
+
+print(
+    f"\nTest images: {len(test_dataset)}"
+)
+
 
 
 # ============================================================
 # MODEL
 # ============================================================
 
+
 model = create_resnet18(
     num_classes=2,
     pretrained=False
 )
+
 
 checkpoint = torch.load(
     CHECKPOINT,
     map_location=device
 )
 
+
+# Handle checkpoint dictionary or raw state_dict
+
 if isinstance(checkpoint, dict) and "model_state_dict" in checkpoint:
-    model.load_state_dict(checkpoint["model_state_dict"])
+
+    model.load_state_dict(
+        checkpoint["model_state_dict"]
+    )
+
 else:
-    model.load_state_dict(checkpoint)
+
+    model.load_state_dict(
+        checkpoint
+    )
+
 
 model = model.to(device)
+
 model.eval()
 
-print("Best ResNet-18 checkpoint loaded successfully.")
+
+print(
+    "Best ResNet-18 checkpoint loaded successfully."
+)
+
 
 
 # ============================================================
-# EVALUATION
+# TEST EVALUATION
 # ============================================================
+
+
+all_labels = []
+
+all_predictions = []
+
+all_probabilities = []
+
+
+total_loss = 0.0
+
 
 criterion = torch.nn.CrossEntropyLoss()
 
-all_labels = []
-all_predictions = []
-all_probabilities = []
 
-total_loss = 0.0
 
 with torch.no_grad():
 
     for images, labels in test_loader:
 
+
         images = images.to(device)
+
         labels = labels.to(device)
+
 
         outputs = model(images)
 
-        loss = criterion(outputs, labels)
 
-        probabilities = torch.softmax(outputs, dim=1)
-        predictions = torch.argmax(outputs, dim=1)
-
-        total_loss += loss.item() * labels.size(0)
-
-        all_labels.extend(labels.cpu().numpy())
-        all_predictions.extend(predictions.cpu().numpy())
-        all_probabilities.extend(
-            probabilities[:, 1].cpu().numpy()
+        loss = criterion(
+            outputs,
+            labels
         )
 
 
+        probabilities = torch.softmax(
+            outputs,
+            dim=1
+        )
+
+
+        predictions = torch.argmax(
+            outputs,
+            dim=1
+        )
+
+
+        total_loss += (
+            loss.item()
+            *
+            labels.size(0)
+        )
+
+
+        all_labels.extend(
+            labels.cpu().numpy()
+        )
+
+
+        all_predictions.extend(
+            predictions.cpu().numpy()
+        )
+
+
+        all_probabilities.extend(
+            probabilities[:, 1]
+            .cpu()
+            .numpy()
+        )
+
+
+
 # ============================================================
-# NUMPY ARRAYS
+# CONVERT TO NUMPY
 # ============================================================
 
-all_labels = np.array(all_labels)
-all_predictions = np.array(all_predictions)
-all_probabilities = np.array(all_probabilities)
 
-test_loss = total_loss / len(test_dataset)
+all_labels = np.array(
+    all_labels
+)
+
+all_predictions = np.array(
+    all_predictions
+)
+
+all_probabilities = np.array(
+    all_probabilities
+)
+
+
+test_loss = (
+    total_loss /
+    len(test_dataset)
+)
+
 
 
 # ============================================================
 # METRICS
 # ============================================================
 
+
 accuracy = accuracy_score(
     all_labels,
     all_predictions
 )
+
 
 precision = precision_score(
     all_labels,
@@ -177,11 +283,13 @@ precision = precision_score(
     zero_division=0
 )
 
+
 recall = recall_score(
     all_labels,
     all_predictions,
     zero_division=0
 )
+
 
 f1 = f1_score(
     all_labels,
@@ -189,75 +297,145 @@ f1 = f1_score(
     zero_division=0
 )
 
+
 roc_auc = roc_auc_score(
     all_labels,
     all_probabilities
 )
 
 
+
 # ============================================================
 # CONFUSION MATRIX
 # ============================================================
+
 
 cm = confusion_matrix(
     all_labels,
     all_predictions
 )
 
+
 tn, fp, fn, tp = cm.ravel()
 
-specificity = tn / (tn + fp)
+
+
+specificity = (
+
+    tn / (tn + fp)
+
+    if (tn + fp) > 0
+
+    else 0
+
+)
+
 
 
 # ============================================================
-# RESULTS
+# PRINT RESULTS
 # ============================================================
 
-print("\n" + "=" * 70)
-print("FINAL TEST RESULTS")
-print("=" * 70)
 
-print(f"Test Loss:       {test_loss:.4f}")
-print(f"Accuracy:        {accuracy:.4f}")
-print(f"Precision:       {precision:.4f}")
-print(f"Recall:          {recall:.4f}")
-print(f"Sensitivity:     {recall:.4f}")
-print(f"Specificity:     {specificity:.4f}")
-print(f"F1-score:        {f1:.4f}")
-print(f"ROC-AUC:         {roc_auc:.4f}")
+print(
+    "\n" + "=" * 70
+)
+
+print(
+    "FINAL TEST RESULTS"
+)
+
+print(
+    "=" * 70
+)
 
 
-print("\nConfusion Matrix:")
+
+print(
+    f"Test Loss:       {test_loss:.4f}"
+)
+
+print(
+    f"Accuracy:        {accuracy:.4f}"
+)
+
+print(
+    f"Precision:       {precision:.4f}"
+)
+
+print(
+    f"Recall:          {recall:.4f}"
+)
+
+print(
+    f"Sensitivity:     {recall:.4f}"
+)
+
+print(
+    f"Specificity:     {specificity:.4f}"
+)
+
+print(
+    f"F1-score:        {f1:.4f}"
+)
+
+print(
+    f"ROC-AUC:         {roc_auc:.4f}"
+)
+
+
+
+print(
+    "\nConfusion Matrix:"
+)
+
 print(cm)
 
 
-print("\nClassification Report:")
+
+print(
+    "\nClassification Report:"
+)
+
 
 print(
     classification_report(
         all_labels,
         all_predictions,
-        target_names=["Benign", "Malignant"],
+        target_names=[
+            "Benign",
+            "Malignant"
+        ],
         digits=4,
         zero_division=0
     )
 )
 
 
+
 # ============================================================
 # SAVE PREDICTIONS
 # ============================================================
+
 
 os.makedirs(
     RESULTS_DIR,
     exist_ok=True
 )
 
+
+
 prediction_df = test_dataset.data.copy()
 
+
+
 prediction_df["true_label"] = all_labels
+
 prediction_df["predicted_label"] = all_predictions
+
 prediction_df["malignant_probability"] = all_probabilities
+
+
 
 prediction_df.to_csv(
     PREDICTIONS_FILE,
@@ -265,13 +443,33 @@ prediction_df.to_csv(
 )
 
 
+
 # ============================================================
-# COMPLETE
+# COMPLETION
 # ============================================================
 
-print("=" * 70)
-print("TEST EVALUATION COMPLETED")
-print("=" * 70)
 
-print("\nPredictions saved to:")
-print(os.path.abspath(PREDICTIONS_FILE))
+print(
+    "=" * 70
+)
+
+print(
+    "TEST EVALUATION COMPLETED"
+)
+
+print(
+    "=" * 70
+)
+
+
+
+print(
+    "\nPredictions saved to:"
+)
+
+
+print(
+    os.path.abspath(
+        PREDICTIONS_FILE
+    )
+)
