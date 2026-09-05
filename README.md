@@ -303,92 +303,145 @@ breast-cancer-federated-learning/
 
 
 ---
-
 # Installation
 
-Create and activate environment:
-
+## Create and Activate Environment
 
 ```bash
 conda create -n flower_env python=3.11
 
 conda activate flower_env
+```
 
+## Install Dependencies
 
-Install dependencies:
+```bash
 pip install -r requirements.txt
+```
 
-Running Federated Training
-Start Server
 
-Open terminal:
+# Running Federated Training
+
+## Start Server
+
+Open a terminal and run:
+
+```bash
 python -m src.federated.server.fedavg_server
+```
 
-Start Clients
 
-Open separate terminals and run each client:
+## Start Clients
 
-Client 1
+Open five separate terminals and run the following commands.
+
+
+### Client 1
+
+```bash
 python -m src.federated.clients.run_client client_1
+```
 
-Client 2
+
+### Client 2
+
+```bash
 python -m src.federated.clients.run_client client_2
+```
 
-Client 3
+
+### Client 3
+
+```bash
 python -m src.federated.clients.run_client client_3
+```
 
-Client 4
+
+### Client 4
+
+```bash
 python -m src.federated.clients.run_client client_4
+```
 
-Client 5
+
+### Client 5
+
+```bash
 python -m src.federated.clients.run_client client_5
+```
 
-After all clients complete the local training process, the Flower server aggregates the client updates using FedAvg and saves the final global DenseNet-121 model.
 
-Model Evaluation
+After all clients complete local training, the Flower server aggregates the client updates using the FedAvg algorithm and saves the final global DenseNet-121 model.
+
+
+
+# Model Evaluation
 
 After completing federated training, evaluate the final global model:
 
+```bash
 python -m src.evaluation.evaluation_fedavg_densenet121
+```
+
+
 The evaluation generates:
 
-Accuracy
-Precision
-Sensitivity
-Specificity
-F1-score
-ROC-AUC
-Confusion Matrix values
+- Accuracy
+- Precision
+- Sensitivity
+- Specificity
+- F1-score
+- ROC-AUC
+- Confusion Matrix values
 
-Results are saved in:
+
+Evaluation results are saved:
+
+```
 results/
-
 └── fedavg_densenet121_test_results.csv
+```
 
-Prediction outputs are saved as:
+
+Prediction outputs are saved:
+
+```
 results/
-
 └── fedavg_densenet121_predictions.csv
+```
 
-Threshold Optimization Analysis
+
+
+# Threshold Optimization Analysis
 
 To analyze the effect of classification threshold selection:
+
+```bash
 python -m src.evaluation.threshold_analysis_fedavg_densenet121
+```
+
 
 The analysis evaluates different probability thresholds and identifies optimal operating points based on:
 
-F1-score
-Sensitivity
-Specificity
+- F1-score
+- Sensitivity
+- Specificity
+
 
 Output:
+
+```
 results/
-
 └── fedavg_densenet121_threshold_analysis.csv
+```
 
-Federated Model Checkpoints
+
+
+# Federated Model Checkpoints
 
 During training, the global model checkpoints are saved:
+
+```
 checkpoints/
 
 ├── fedavg_densenet121_round_1.pth
@@ -397,56 +450,94 @@ checkpoints/
 ├── fedavg_densenet121_round_4.pth
 ├── fedavg_densenet121_round_5.pth
 └── fedavg_densenet121_final.pth
+```
 
 
-Hardware Environment
+
+# Hardware Environment
 
 Experiments were performed on:
 
-Device: Apple MacBook with Apple Silicon M5
-Operating System: macOS
-Python Version: 3.11
-Deep Learning Framework: PyTorch
-Acceleration: Apple Metal Performance Shaders (MPS)
+- Device: Apple MacBook with Apple Silicon M5
+- Operating System: macOS
+- Python Version: 3.11
+- Deep Learning Framework: PyTorch
+- Acceleration: Apple Metal Performance Shaders (MPS)
 
 
-Reproducibility
+
+# Reproducibility
 
 To reproduce the experiments:
 
-Install required dependencies.
-Prepare the BreaKHis dataset.
-Generate federated client partitions.
-Start the Flower server.
-Launch all federated clients.
-Evaluate the final global model.
+1. Install required dependencies.
+
+2. Prepare the BreaKHis dataset.
+
+3. Generate federated client partitions.
+
+4. Start the Flower server.
+
+5. Launch all federated clients.
+
+6. Evaluate the final global model.
+
 
 The raw medical dataset is not included in this repository due to size and licensing limitations.
 
 Users should download the original BreaKHis dataset from the official source and prepare the required directory structure.
 
 
-Limitations
+
+# Limitations
 
 Current limitations:
 
-Limited number of communication rounds due to computational resources.
-Simulated federated environment using local machines.
-No differential privacy mechanism implemented.
-No secure aggregation protocol implemented.
-Further validation on external medical datasets is required.
+- Limited number of communication rounds due to computational resources.
+- Simulated federated environment using local machines.
+- No differential privacy mechanism implemented.
+- No secure aggregation protocol implemented.
+- Further validation on external medical datasets is required.
 
 
-Future Work
+
+# Future Work
 
 Future research directions include:
 
-Increasing communication rounds.
-Experimenting with additional federated algorithms:
-FedProx
-FedAdam
-Scaffold
-Implementing privacy-preserving mechanisms.
-Adding complete DenseNet-121 Grad-CAM visualization.
-Performing multi-center clinical validation.
-Deploying the model as a medical decision-support prototype.
+- Increasing communication rounds.
+- Experimenting with additional federated algorithms:
+  - FedProx
+  - FedAdam
+  - Scaffold
+- Implementing privacy-preserving mechanisms.
+- Adding complete DenseNet-121 Grad-CAM visualization.
+- Performing multi-center clinical validation.
+- Deploying the model as a medical decision-support prototype.
+
+
+
+# Citation
+
+If this project contributes to your research, please cite:
+
+```
+Federated Breast Cancer Classification Using DenseNet-121
+
+A privacy-preserving deep learning framework using
+Flower Federated Learning and FedAvg aggregation.
+```
+
+
+# Author
+
+**Mehedy Ridoy**
+
+GitHub:
+
+https://github.com/MehedyRidoy-MBSTU
+
+
+Research Project:
+
+**Federated Learning Based Breast Cancer Classification Using Deep Neural Networks**
