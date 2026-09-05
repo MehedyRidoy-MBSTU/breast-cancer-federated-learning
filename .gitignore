@@ -25,3 +25,12 @@ checkpoints/*.pth
 
 # VS Code
 .vscode/
+
+
+# Model weights
+*.pth
+*.pt
+
+# Federated checkpoints
+checkpoints/
+results/**/fedavg*.pth
