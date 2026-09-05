@@ -270,36 +270,44 @@ Planned visualization categories:
 
 # Repository Structure
 
+```text
 breast-cancer-federated-learning/
 
-│
 ├── src/
-│ │
-│ ├── models/
-│ │ └── DenseNet-121 architecture
-│ │
-│ ├── federated/
-│ │ ├── server/
-│ │ ├── clients/
-│ │ └── datasets/
-│ │
-│ ├── training/
-│ │
-│ ├── evaluation/
-│ │
-│ └── xai/
 │
-├── processed/
-│ └── Dataset split files
+├─── models/
+│   └── densenet121.py
 │
-├── results/
-│ └── Evaluation outputs
+├─── federated/
+│   ├── server/
+│   │   └── fedavg_server.py
+│   │
+│   ├── clients/
+│   │   └── run_client.py
+│   │
+│   └── datasets/
+│
+├─── training/
+│
+├─── evaluation/
+│   ├── evaluation_fedavg_densenet121.py
+│   └── threshold_analysis_fedavg_densenet121.py
+│
+├─── xai/
+│
+├─── processed/
+│   └── Dataset split files
+│
+├─── results/
+│   └── Evaluation outputs
+│
+├─── checkpoints/
+│   └── Saved model weights
 │
 ├── README.md
 │
-└── .gitignore
-
-
+└── requirements.txt
+```
 
 
 ---
