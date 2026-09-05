@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Environment
+flower_env/
+.env
+
+# macOS
+.DS_Store
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Large datasets
+data/raw/
+
+# Model checkpoints
+checkpoints/*.pth
+
+# Temporary
+*.log
+
+# VS Code
+.vscode/
