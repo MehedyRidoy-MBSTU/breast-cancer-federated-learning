@@ -1,78 +1,92 @@
 import sys
+
 import flwr as fl
 
 from src.federated.clients.scaffold_client import ScaffoldClient
 
 
+# ============================================================
+# CONFIGURATION
+# ============================================================
+
 SERVER_ADDRESS = "127.0.0.1:8080"
 
+VALID_CLIENTS = {
+
+    "client_1",
+    "client_2",
+    "client_3",
+    "client_4",
+    "client_5",
+
+}
 
 
-if __name__ == "__main__":
+# ============================================================
+# COMMAND LINE ARGUMENT
+# ============================================================
 
-
-    if len(sys.argv) != 2:
-
-        print(
-            "Usage: python -m src.federated.clients.run_scaffold_client client_1"
-        )
-
-        sys.exit(1)
-
-
-
-    client_id = sys.argv[1]
-
-
-    print("=" * 70)
-    print("SCAFFOLD DENSENET-121 CLIENT")
-    print("=" * 70)
-
+if len(sys.argv) != 2:
 
     print(
-        f"Client ID: {client_id}"
+        "Usage:\n"
+        "python -m "
+        "src.federated.clients.run_scaffold_client "
+        "client_1"
     )
 
-
-    print(
-        f"Server: {SERVER_ADDRESS}"
-    )
+    sys.exit(1)
 
 
-    client = ScaffoldClient(
-        client_id
-    )
+CLIENT_ID = sys.argv[1]
 
 
-    print(
-        "\nClient initialized successfully"
-    )
+if CLIENT_ID not in VALID_CLIENTS:
 
+    raise ValueError(
 
-    print(
-        f"Training samples: {len(client.train_dataset)}"
-    )
-
-
-    print(
-        f"Evaluation samples: {len(client.eval_dataset)}"
-    )
-
-
-    print(
-        "\nConnecting to Flower server..."
-    )
-
-
-    fl.client.start_client(
-
-        server_address=SERVER_ADDRESS,
-
-        client=client.to_client(),
+        "Invalid client ID.\n"
+        "Use one of:\n"
+        "client_1\n"
+        "client_2\n"
+        "client_3\n"
+        "client_4\n"
+        "client_5"
 
     )
 
 
-    print(
-        "\nClient finished"
-    )
+# ============================================================
+# CREATE CLIENT
+# ============================================================
+
+print("=" * 70)
+
+print(
+    f"STARTING CANONICAL SCAFFOLD CLIENT: "
+    f"{CLIENT_ID}"
+)
+
+print("=" * 70)
+
+print(
+    f"Server: {SERVER_ADDRESS}"
+)
+
+
+client = ScaffoldClient(
+    client_id=CLIENT_ID
+)
+
+
+# ============================================================
+# CONNECT TO SERVER
+# ============================================================
+
+fl.client.start_client(
+
+    server_address=SERVER_ADDRESS,
+
+    client=client.to_client()
+
+)
