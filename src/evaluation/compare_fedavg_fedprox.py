@@ -16,6 +16,11 @@ FEDPROX_RESULTS = (
     "results/fedprox_densenet121_test_results.csv"
 )
 
+SCAFFOLD_RESULTS = (
+    "results/scaffold_densenet121_test_results.csv"
+)
+
+
 
 OUTPUT_DIR = (
     "results/comparison"
@@ -48,6 +53,7 @@ os.makedirs(
 )
 
 
+
 # ============================================================
 # LOAD RESULTS
 # ============================================================
@@ -56,26 +62,36 @@ fedavg = pd.read_csv(
     FEDAVG_RESULTS
 )
 
+
 fedprox = pd.read_csv(
     FEDPROX_RESULTS
 )
+
+
+scaffold = pd.read_csv(
+    SCAFFOLD_RESULTS
+)
+
 
 
 fedavg["Model"] = "FedAvg DenseNet-121"
 
 fedprox["Model"] = "FedProx DenseNet-121"
 
+scaffold["Model"] = "SCAFFOLD DenseNet-121"
+
+
 
 comparison = pd.concat(
     [
         fedavg,
-        fedprox
+        fedprox,
+        scaffold
     ],
     ignore_index=True
 )
 
 
-# reorder columns
 
 comparison = comparison[
     [
@@ -90,17 +106,22 @@ comparison = comparison[
 ]
 
 
+
 comparison.to_csv(
     CSV_OUTPUT,
     index=False
 )
 
 
+
 print("="*70)
+
 print("MODEL COMPARISON")
+
 print("="*70)
 
 print(comparison)
+
 
 
 # ============================================================
@@ -108,20 +129,30 @@ print(comparison)
 # ============================================================
 
 metrics = [
+
     "Accuracy",
+
     "Precision",
+
     "Sensitivity",
+
     "Specificity",
+
     "F1-score",
+
     "ROC-AUC"
+
 ]
+
 
 
 x = np.arange(
     len(metrics)
 )
 
-width = 0.35
+
+width = 0.25
+
 
 
 plt.figure(
@@ -129,27 +160,60 @@ plt.figure(
 )
 
 
-plt.bar(
-    x-width/2,
-    comparison.iloc[0][metrics],
-    width,
-    label="FedAvg"
-)
+
+positions = [
+
+    x-width,
+
+    x,
+
+    x+width
+
+]
 
 
-plt.bar(
-    x+width/2,
-    comparison.iloc[1][metrics],
-    width,
-    label="FedProx"
-)
+
+models = [
+
+    ("FedAvg", comparison.iloc[0]),
+
+    ("FedProx", comparison.iloc[1]),
+
+    ("SCAFFOLD", comparison.iloc[2])
+
+]
+
+
+
+for pos, (name, row) in zip(
+    positions,
+    models
+):
+
+    plt.bar(
+
+        pos,
+
+        row[metrics],
+
+        width,
+
+        label=name
+
+    )
+
 
 
 plt.xticks(
+
     x,
+
     metrics,
+
     rotation=45
+
 )
+
 
 
 plt.ylabel(
@@ -157,20 +221,28 @@ plt.ylabel(
 )
 
 
+
 plt.title(
-    "FedAvg vs FedProx DenseNet-121 Performance Comparison"
+    "FedAvg vs FedProx vs SCAFFOLD DenseNet-121 Performance Comparison"
 )
+
 
 
 plt.legend()
 
+
 plt.tight_layout()
 
 
+
 plt.savefig(
+
     BAR_OUTPUT,
+
     dpi=300
+
 )
+
 
 
 plt.close()
@@ -182,19 +254,19 @@ plt.close()
 # ============================================================
 
 plt.figure(
-    figsize=(6,5)
+    figsize=(7,5)
 )
 
-
-models = comparison["Model"]
-
-scores = comparison["ROC-AUC"]
 
 
 plt.bar(
-    models,
-    scores
+
+    comparison["Model"],
+
+    comparison["ROC-AUC"]
+
 )
+
 
 
 plt.ylabel(
@@ -202,14 +274,17 @@ plt.ylabel(
 )
 
 
+
 plt.title(
     "ROC-AUC Comparison"
 )
 
 
+
 plt.xticks(
     rotation=20
 )
+
 
 
 plt.ylim(
@@ -218,13 +293,19 @@ plt.ylim(
 )
 
 
+
 plt.tight_layout()
 
 
+
 plt.savefig(
+
     ROC_OUTPUT,
+
     dpi=300
+
 )
+
 
 
 plt.close()
@@ -235,93 +316,130 @@ plt.close()
 # RADAR CHART
 # ============================================================
 
-
 labels = metrics
-
-fedavg_values = comparison.iloc[0][metrics].values.tolist()
-
-fedprox_values = comparison.iloc[1][metrics].values.tolist()
-
-
-fedavg_values += fedavg_values[:1]
-
-fedprox_values += fedprox_values[:1]
 
 
 angles = np.linspace(
+
     0,
+
     2*np.pi,
-    len(labels)+1
+
+    len(labels),
+
+    endpoint=False
+
 )
 
 
 fig = plt.figure(
+
     figsize=(7,7)
+
 )
 
 
 ax = fig.add_subplot(
+
     111,
+
     polar=True
+
 )
 
 
-ax.plot(
-    angles,
-    fedavg_values,
-    label="FedAvg"
-)
+
+for _, row in comparison.iterrows():
 
 
-ax.plot(
-    angles,
-    fedprox_values,
-    label="FedProx"
-)
+    values = row[metrics].tolist()
+
+
+    values += values[:1]
+
+
+    radar_angles = np.append(
+
+        angles,
+
+        angles[0]
+
+    )
+
+
+    ax.plot(
+
+        radar_angles,
+
+        values,
+
+        label=row["Model"]
+
+    )
+
 
 
 ax.set_xticks(
-    angles[:-1]
+
+    angles
+
 )
 
+
 ax.set_xticklabels(
+
     labels
+
 )
 
 
 ax.set_ylim(
+
     0,
+
     1
+
 )
 
 
 ax.legend(
-    loc="upper right"
+
+    loc="upper right",
+
+    bbox_to_anchor=(1.3,1.1)
+
 )
+
 
 
 plt.title(
-    "Federated Model Metric Comparison"
+
+    "Model Performance Radar Comparison"
+
 )
+
 
 
 plt.tight_layout()
 
 
+
 plt.savefig(
+
     RADAR_OUTPUT,
+
     dpi=300
+
 )
+
 
 
 plt.close()
 
 
 
-print("\nSaved:")
+print("\nComparison files saved:")
 print(CSV_OUTPUT)
 print(BAR_OUTPUT)
 print(ROC_OUTPUT)
 print(RADAR_OUTPUT)
-
-print("\nComparison completed.")

@@ -1,3 +1,4 @@
 Model,TN,FP,FN,TP
 FedAvg DenseNet-121,294,53,297,702
 FedProx DenseNet-121,48,299,68,931
+SCAFFOLD DenseNet-121,312,35,909,90
