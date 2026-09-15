@@ -34,3 +34,7 @@ checkpoints/*.pth
 # Federated checkpoints
 checkpoints/
 results/**/fedavg*.pth
+
+# Generated XAI outputs
+results/gradcam_*/
+results/shap_*/
